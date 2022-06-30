@@ -33,6 +33,7 @@ test {
 
 jar {
     manifest {
-        attributes "Main-Class": "org.rolando.ModularWallpaperWindows"
+        attributes "Main-Class": "ModularWallpaperWindows"
     }
+    from {configurations.compile.collect {zipTree(it)}}
 }
