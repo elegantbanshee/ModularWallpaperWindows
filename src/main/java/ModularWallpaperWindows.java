@@ -2,13 +2,16 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
+import java.awt.event.ItemEvent;
+import java.awt.event.ItemListener;
 import java.awt.image.BufferedImage;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Properties;
 
 public class ModularWallpaperWindows {
     public static void main(String[] args) {
@@ -20,7 +23,7 @@ public class ModularWallpaperWindows {
         while (true) {
             createAndUpdateWallpaper();
             try {
-                Thread.sleep(1000 * 10);
+                Thread.sleep(1000);
             }
             catch (InterruptedException e) {
                 e.printStackTrace();
@@ -46,6 +49,9 @@ public class ModularWallpaperWindows {
 
             //String timeString = String.format("%02d:%02d", date.getHours(), date.getMinutes());
             DateFormat dateFormat = new SimpleDateFormat("hh:mm");
+            Properties properties = getProperties();
+            if (Boolean.parseBoolean(properties.getProperty("SECONDS", "FALSE")))
+                dateFormat = new SimpleDateFormat("hh:mm:ss");
             String timeString = dateFormat.format(new Date());
 
             FontMetrics fontMetrics = g.getFontMetrics(font);
@@ -95,6 +101,9 @@ public class ModularWallpaperWindows {
 
         PopupMenu popupMenu = new PopupMenu();
 
+        Properties properties = getProperties();
+
+        // Exit button
         MenuItem exit = new MenuItem("Exit");
         exit.addActionListener(new ActionListener() {
             @Override
@@ -104,6 +113,19 @@ public class ModularWallpaperWindows {
         });
         popupMenu.add(exit);
 
+        // Seconds button
+        CheckboxMenuItem seconds = new CheckboxMenuItem("Seconds", false);
+        seconds.setState(Boolean.parseBoolean(
+                properties.getProperty("SECONDS", "FALSE")
+        ));
+        seconds.addItemListener(e -> {
+            boolean enabled = e.getStateChange() == ItemEvent.SELECTED;
+            properties.setProperty("SECONDS", enabled ? "TRUE" : "FALSE");
+            storeProperties(properties);
+            //seconds.setState(!enabled);
+        });
+        popupMenu.add(seconds);
+
         TrayIcon trayIcon = new TrayIcon(image, "Modular Wallpaper", popupMenu);
 
         try {
@@ -112,5 +134,31 @@ public class ModularWallpaperWindows {
         catch (AWTException e) {
             e.printStackTrace();
         }
+    }
+
+    private static void storeProperties(Properties properties) {
+        try {
+            properties.store(new FileOutputStream(
+                    Paths.get(System.getenv("APPDATA"), "ModularWallpaper/all.properties")
+                            .toFile()
+            ), null);
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+    }
+
+    private static Properties getProperties() {
+        Properties properties = new Properties();
+        try {
+            properties.load(new FileInputStream(
+                    Paths.get(System.getenv("APPDATA"), "ModularWallpaper/all.properties")
+                            .toFile()
+            ));
+        }
+        catch (IOException e) {
+            e.printStackTrace();
+        }
+        return properties;
     }
 }
