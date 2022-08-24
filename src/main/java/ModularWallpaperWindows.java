@@ -64,7 +64,6 @@ public class ModularWallpaperWindows {
             font = font.deriveFont(Font.BOLD, 305);
             g.setFont(font);
 
-            //String timeString = String.format("%02d:%02d", date.getHours(), date.getMinutes());
             DateFormat dateFormat = new SimpleDateFormat("hh:mm");
             if (Boolean.parseBoolean(properties.getProperty("SECONDS", "FALSE")))
                 dateFormat = new SimpleDateFormat("hh:mm:ss");
@@ -74,6 +73,19 @@ public class ModularWallpaperWindows {
             double x = 1920.0 / 2.0 - fontMetrics.stringWidth(timeString) / 2.0;
             double y = 1080.0 / 2.0 -  fontMetrics.getHeight() / 2.0;
             g.drawString(timeString, (float) x, (float) y);
+
+            if (Boolean.parseBoolean(properties.getProperty("DATE", "FALSE"))) {
+                // Date
+                font = font.deriveFont(Font.PLAIN, 50);
+                g.setFont(font);
+                fontMetrics = g.getFontMetrics(font);
+
+                dateFormat = new SimpleDateFormat("EEEEE, MMMMM d, y");
+                String dateString = dateFormat.format(new Date());
+                g.drawString(dateString,
+                        (int) (1920.0 / 2.0 - fontMetrics.stringWidth(dateString) / 2.0),
+                        425);
+            }
         }
         catch (FontFormatException | IOException e) {
             e.printStackTrace();
@@ -133,7 +145,6 @@ public class ModularWallpaperWindows {
                 System.exit(0);
             }
         });
-        popupMenu.add(exit);
 
         // Seconds button
         CheckboxMenuItem seconds = new CheckboxMenuItem("Seconds", false);
@@ -159,6 +170,18 @@ public class ModularWallpaperWindows {
         }
         popupMenu.add(colorMenu);
 
+        // Date button
+        CheckboxMenuItem date = new CheckboxMenuItem("Date");
+        date.setState(Boolean.parseBoolean(properties.getProperty("DATE", "FALSE")));
+        date.addItemListener(e -> {
+            boolean enabled = e.getStateChange() == ItemEvent.SELECTED;
+            properties.setProperty("DATE", enabled ? "TRUE": "FALSE");
+            storeProperties(properties);
+        });
+        popupMenu.add(date);
+
+        // Tray Icon
+        popupMenu.add(exit);
         TrayIcon trayIcon = new TrayIcon(image, "Modular Wallpaper", popupMenu);
 
         try {
