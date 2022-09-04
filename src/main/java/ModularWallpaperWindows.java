@@ -124,11 +124,18 @@ public class ModularWallpaperWindows {
             String dateString = dateFormat.format(new Date());
             EventQueue.invokeLater(() -> {
                 dateField.setText(dateString);
+                frame.revalidate();
+                frame.repaint();
                 frame.pack();
             });
         }
         else {
-            dateField.setText("");
+            EventQueue.invokeLater(() -> {
+                dateField.setText("");
+                frame.revalidate();
+                frame.repaint();
+                frame.pack();
+            });
         }
     }
 
