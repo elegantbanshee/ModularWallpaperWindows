@@ -98,7 +98,7 @@ public class ModularWallpaperWindows {
             frame.pack();
         });
 
-        if (Boolean.parseBoolean(properties.getProperty("DATE", "FALSE"))) {
+        if (Boolean.parseBoolean(properties.getProperty("DATE", "TRUE"))) {
             // Date
             dateFormat = new SimpleDateFormat("EEEEE, MMMMM d, y");
             String dateString = dateFormat.format(new Date());
@@ -144,7 +144,7 @@ public class ModularWallpaperWindows {
 
         // Date button
         CheckboxMenuItem date = new CheckboxMenuItem("Date");
-        date.setState(Boolean.parseBoolean(properties.getProperty("DATE", "FALSE")));
+        date.setState(Boolean.parseBoolean(properties.getProperty("DATE", "TRUE")));
         date.addItemListener(e -> {
             boolean enabled = e.getStateChange() == ItemEvent.SELECTED;
             properties.setProperty("DATE", enabled ? "TRUE": "FALSE");
