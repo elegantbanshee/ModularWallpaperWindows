@@ -65,7 +65,7 @@ public class ModularWallpaperWindows {
         timeField.setBorder(BorderFactory.createEmptyBorder());
         timeField.setFont(timeFont);
         timeField.setForeground(Color.WHITE);
-        Dimension timeSize = new Dimension((int) screen.getWidth(), 400);
+        Dimension timeSize = new Dimension((int) screen.getWidth(), 350);
         timeField.setSize(timeSize);
         timeField.setMinimumSize(timeSize);
         timeField.setPreferredSize(timeSize);
