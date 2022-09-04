@@ -1,4 +1,6 @@
 import javax.imageio.ImageIO;
+import javax.swing.*;
+import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -16,24 +18,59 @@ import java.util.Map;
 import java.util.Properties;
 
 public class ModularWallpaperWindows {
-    private static HashMap<String, Color> colors = new HashMap<>();
+    private static JFrame frame = new JFrame();
+    private static JPanel panel = new JPanel();
+    private static JLabel timeField = new JLabel();
+    private static JLabel dateField = new JLabel();
 
     public static void main(String[] args) {
-        populateColors();
+        frame.setFocusable(false);
+        frame.setResizable(false);
+        frame.setAlwaysOnTop(false);
+        frame.setUndecorated(true);
+        frame.setAutoRequestFocus(false);
+        frame.setResizable(false);
+        frame.setFocusableWindowState(false);
+        frame.setFocusCycleRoot(false);
+        frame.setVisible(true);
+        frame.setBackground(new Color(0, 0, 0, 0));
+        frame.setLocation(50, 0);
+
+        panel.setBackground(new Color(0, 0, 0, 0));
+        panel.setBorder(BorderFactory.createEmptyBorder());
+        panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        frame.add(panel);
+        frame.pack();
+
+        frame.toBack();
+
+        Path fontPath = Paths.get(System.getenv("APPDATA"), "ModularWallpaper/timeburnerbold.ttf");
+
+        Font timeFont = null;
+        Font dateFont = null;
+        try {
+            Font font = Font.createFont(Font.TRUETYPE_FONT, fontPath.toFile());
+            timeFont = font.deriveFont(Font.BOLD, 305);
+            dateFont = font.deriveFont(Font.PLAIN, 50);
+        }
+        catch (FontFormatException | IOException e) {
+            e.printStackTrace();
+        }
+
+        timeField.setBackground(new Color(0, 0, 0, 0));
+        timeField.setBorder(BorderFactory.createEmptyBorder());
+        timeField.setFont(timeFont);
+        timeField.setForeground(Color.WHITE);
+        panel.add(timeField);
+
+        dateField.setBackground(new Color(0, 0, 0, 0));
+        dateField.setBorder(BorderFactory.createEmptyBorder());
+        dateField.setFont(dateFont);
+        dateField.setForeground(Color.WHITE);
+        panel.add(dateField);
+
         setSystemTrayIcon();
         startImageLoop();
-    }
-
-    private static void populateColors() {
-        colors.put("Pink", new Color(255, 189, 189));
-        colors.put("Black", new Color(0, 0, 0));
-        colors.put("Blue", new Color(97, 152, 208));
-        colors.put("Green", new Color(74, 120, 74));
-        colors.put("Dark Gray", new Color(75, 75, 75));
-        colors.put("Orange", new Color(227, 180, 77));
-        colors.put("Gray", new Color(150, 150, 150));
-        colors.put("Red", new Color(159, 23, 23));
-        colors.put("Yellow", new Color(255, 222, 142));
     }
 
     private static void startImageLoop() {
@@ -51,80 +88,27 @@ public class ModularWallpaperWindows {
     private static void createAndUpdateWallpaper() {
         Properties properties = getProperties();
 
-        BufferedImage image = new BufferedImage(1920, 1080, BufferedImage.TYPE_INT_RGB);
-        Graphics2D g = (Graphics2D) image.getGraphics();
-        g.setColor(getBackgroundColor());
-        g.setStroke(new BasicStroke(1));
-        g.fillRect(0, 0, 1920, 1080);
+        DateFormat dateFormat = new SimpleDateFormat("hh:mm");
+        if (Boolean.parseBoolean(properties.getProperty("SECONDS", "FALSE")))
+            dateFormat = new SimpleDateFormat("hh:mm:ss");
+        String timeString = dateFormat.format(new Date());
 
-        g.setColor(Color.WHITE);
-        Path fontPath = Paths.get(System.getenv("APPDATA"), "ModularWallpaper/timeburnerbold.ttf");
-        try {
-            Font font = Font.createFont(Font.TRUETYPE_FONT, fontPath.toFile());
-            font = font.deriveFont(Font.BOLD, 305);
-            g.setFont(font);
+        EventQueue.invokeLater(() -> {
+            timeField.setText(timeString);
+            frame.pack();
+        });
 
-            DateFormat dateFormat = new SimpleDateFormat("hh:mm");
-            if (Boolean.parseBoolean(properties.getProperty("SECONDS", "FALSE")))
-                dateFormat = new SimpleDateFormat("hh:mm:ss");
-            String timeString = dateFormat.format(new Date());
-
-            FontMetrics fontMetrics = g.getFontMetrics(font);
-            double x = 1920.0 / 2.0 - fontMetrics.stringWidth(timeString) / 2.0;
-            double y = 1080.0 / 2.0 -  fontMetrics.getHeight() / 2.0;
-            g.drawString(timeString, (float) x, (float) y);
-
-            if (Boolean.parseBoolean(properties.getProperty("DATE", "FALSE"))) {
-                // Date
-                font = font.deriveFont(Font.PLAIN, 50);
-                g.setFont(font);
-                fontMetrics = g.getFontMetrics(font);
-
-                dateFormat = new SimpleDateFormat("EEEEE, MMMMM d, y");
-                String dateString = dateFormat.format(new Date());
-                g.drawString(dateString,
-                        (int) (1920.0 / 2.0 - fontMetrics.stringWidth(dateString) / 2.0),
-                        425);
-            }
+        if (Boolean.parseBoolean(properties.getProperty("DATE", "FALSE"))) {
+            // Date
+            dateFormat = new SimpleDateFormat("EEEEE, MMMMM d, y");
+            String dateString = dateFormat.format(new Date());
+            EventQueue.invokeLater(() -> {
+                dateField.setText(dateString);
+                frame.pack();
+            });
         }
-        catch (FontFormatException | IOException e) {
-            e.printStackTrace();
-        }
-
-
-        Path imagePath = Paths.get(System.getenv("APPDATA"), "ModularWallpaper/wallpaper.png");
-        try {
-            ImageIO.write(image, "png", imagePath.toFile());
-        }
-        catch (IOException e) {
-            e.printStackTrace();
-        }
-
-        updateWallpaper();
-    }
-
-    private static Color getBackgroundColor() {
-        Properties properties = getProperties();
-        String colorName = properties.getProperty("COLOR", "Black");
-        return colors.getOrDefault(colorName, Color.BLACK);
-    }
-
-    private static void updateWallpaper() {
-        Path imagePath = Paths.get(System.getenv("APPDATA"), "ModularWallpaper/wallpaper.png");
-        Path path = Paths.get(System.getenv("APPDATA"), "ModularWallpaper");
-        try {
-            ProcessBuilder processBuilder = new ProcessBuilder(
-                    "java",
-                    "--enable-native-access=ALL-UNNAMED",
-                    "--add-modules",
-                    "jdk.incubator.foreign",
-                    "ModularWallpaper",
-                    imagePath.toAbsolutePath().toString());
-            processBuilder.directory(path.toFile());
-            processBuilder.start();
-        }
-        catch (IOException e) {
-            e.printStackTrace();
+        else {
+            dateField.setText("");
         }
     }
 
@@ -157,18 +141,6 @@ public class ModularWallpaperWindows {
             storeProperties(properties);
         });
         popupMenu.add(seconds);
-
-        // Color
-        PopupMenu colorMenu = new PopupMenu("Color");
-        for (Map.Entry<String, Color> entry : colors.entrySet()) {
-            MenuItem color = new MenuItem(entry.getKey());
-            color.addActionListener(e -> {
-                properties.setProperty("COLOR", entry.getKey());
-                storeProperties(properties);
-            });
-            colorMenu.add(color);
-        }
-        popupMenu.add(colorMenu);
 
         // Date button
         CheckboxMenuItem date = new CheckboxMenuItem("Date");
