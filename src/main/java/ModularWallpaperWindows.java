@@ -78,7 +78,7 @@ public class ModularWallpaperWindows {
         dateField.setBorder(BorderFactory.createEmptyBorder());
         dateField.setFont(dateFont);
         dateField.setForeground(Color.WHITE);
-        Dimension dateSize = new Dimension((int) screen.getWidth(), 50);
+        Dimension dateSize = new Dimension((int) screen.getWidth(), 100);
         dateField.setSize(dateSize);
         dateField.setMinimumSize(dateSize);
         dateField.setPreferredSize(dateSize);
