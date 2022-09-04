@@ -34,11 +34,15 @@ public class ModularWallpaperWindows {
         frame.setFocusCycleRoot(false);
         frame.setVisible(true);
         frame.setBackground(new Color(0, 0, 0, 0));
-        frame.setLocation(50, 0);
+        frame.setLocation(0, 50);
+
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+        frame.setSize(screen);
 
         panel.setBackground(new Color(0, 0, 0, 0));
         panel.setBorder(BorderFactory.createEmptyBorder());
         panel.setLayout(new BoxLayout(panel, BoxLayout.Y_AXIS));
+        panel.setSize(screen);
         frame.add(panel);
         frame.pack();
 
@@ -61,12 +65,26 @@ public class ModularWallpaperWindows {
         timeField.setBorder(BorderFactory.createEmptyBorder());
         timeField.setFont(timeFont);
         timeField.setForeground(Color.WHITE);
+        Dimension timeSize = new Dimension((int) screen.getWidth(), 400);
+        timeField.setSize(timeSize);
+        timeField.setMinimumSize(timeSize);
+        timeField.setPreferredSize(timeSize);
+        timeField.setMaximumSize(timeSize);
+        timeField.setHorizontalAlignment(SwingConstants.CENTER);
+        timeField.setHorizontalTextPosition(SwingConstants.CENTER);
         panel.add(timeField);
 
         dateField.setBackground(new Color(0, 0, 0, 0));
         dateField.setBorder(BorderFactory.createEmptyBorder());
         dateField.setFont(dateFont);
         dateField.setForeground(Color.WHITE);
+        Dimension dateSize = new Dimension((int) screen.getWidth(), 50);
+        dateField.setSize(dateSize);
+        dateField.setMinimumSize(dateSize);
+        dateField.setPreferredSize(dateSize);
+        dateField.setMaximumSize(dateSize);
+        dateField.setHorizontalAlignment(SwingConstants.CENTER);
+        dateField.setHorizontalTextPosition(SwingConstants.CENTER);
         panel.add(dateField);
 
         setSystemTrayIcon();
@@ -95,6 +113,8 @@ public class ModularWallpaperWindows {
 
         EventQueue.invokeLater(() -> {
             timeField.setText(timeString);
+            frame.revalidate();
+            frame.repaint();
             frame.pack();
         });
 
