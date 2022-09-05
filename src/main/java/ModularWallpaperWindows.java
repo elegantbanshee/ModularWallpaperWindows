@@ -1,20 +1,14 @@
-import javax.imageio.ImageIO;
 import javax.swing.*;
-import javax.swing.border.Border;
 import java.awt.*;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
-import java.awt.event.ItemListener;
-import java.awt.image.BufferedImage;
 import java.io.*;
 import java.nio.file.Path;
 import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Properties;
 
 public class ModularWallpaperWindows {
@@ -48,31 +42,19 @@ public class ModularWallpaperWindows {
 
         frame.toBack();
 
-        Path fontPath = Paths.get(System.getenv("APPDATA"), "ModularWallpaper/timeburnerbold.ttf");
-
-        Font timeFont = null;
-        Font dateFont = null;
-        try {
-            Font font = Font.createFont(Font.TRUETYPE_FONT, fontPath.toFile());
-            timeFont = font.deriveFont(Font.BOLD, 305);
-            dateFont = font.deriveFont(Font.PLAIN, 50);
-        }
-        catch (FontFormatException | IOException e) {
-            e.printStackTrace();
-        }
-
-        timeField.setBackground(new Color(0, 0, 0, 0));
-        timeField.setBorder(BorderFactory.createEmptyBorder());
-        timeField.setFont(timeFont);
-        timeField.setForeground(Color.WHITE);
-        Dimension timeSize = new Dimension((int) screen.getWidth(), 350);
-        timeField.setSize(timeSize);
-        timeField.setMinimumSize(timeSize);
-        timeField.setPreferredSize(timeSize);
-        timeField.setMaximumSize(timeSize);
-        timeField.setHorizontalAlignment(SwingConstants.CENTER);
-        timeField.setHorizontalTextPosition(SwingConstants.CENTER);
         panel.add(timeField);
+        panel.add(dateField);
+
+        initializeTimeLabel();
+        initializeDateLabel();
+
+        setSystemTrayIcon();
+        startImageLoop();
+    }
+
+    private static void initializeDateLabel() {
+        Font dateFont = getDateFont(getFontPath());
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
 
         dateField.setBackground(new Color(0, 0, 0, 0));
         dateField.setBorder(BorderFactory.createEmptyBorder());
@@ -85,10 +67,59 @@ public class ModularWallpaperWindows {
         dateField.setMaximumSize(dateSize);
         dateField.setHorizontalAlignment(SwingConstants.CENTER);
         dateField.setHorizontalTextPosition(SwingConstants.CENTER);
-        panel.add(dateField);
 
-        setSystemTrayIcon();
-        startImageLoop();
+    }
+
+    private static void initializeTimeLabel() {
+        Font timeFont = getTimeFont(getFontPath());
+        Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
+
+        timeField.setBackground(new Color(0, 0, 0, 0));
+        timeField.setBorder(BorderFactory.createEmptyBorder());
+        timeField.setFont(timeFont);
+        timeField.setForeground(Color.WHITE);
+        int timeSizeInt = areSecondsEnabled() ? 400 : 350;
+        Dimension timeSize = new Dimension((int) screen.getWidth(), timeSizeInt);
+        timeField.setSize(timeSize);
+        timeField.setMinimumSize(timeSize);
+        timeField.setPreferredSize(timeSize);
+        timeField.setMaximumSize(timeSize);
+        timeField.setHorizontalAlignment(SwingConstants.CENTER);
+        timeField.setHorizontalTextPosition(SwingConstants.CENTER);
+    }
+
+    private static boolean areSecondsEnabled() {
+        Properties properties = getProperties();
+        return Boolean.parseBoolean(properties.getProperty("SECONDS", "FALSE"));
+    }
+
+    private static Path getFontPath() {
+        Path fontPath = Paths.get(System.getenv("APPDATA"), "ModularWallpaper/timeburnerbold.ttf");
+        if (areSecondsEnabled())
+            fontPath = Paths.get(System.getenv("APPDATA"), "ModularWallpaper/dealerplate_california.ttf");
+        return fontPath;
+    }
+
+    private static Font getDateFont(Path fontPath) {
+        try {
+            Font font = Font.createFont(Font.TRUETYPE_FONT, fontPath.toFile());
+            return font.deriveFont(Font.PLAIN, 50);
+        }
+        catch (FontFormatException | IOException e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+
+    private static Font getTimeFont(Path fontPath) {
+        try {
+            Font font = Font.createFont(Font.TRUETYPE_FONT, fontPath.toFile());
+            return font.deriveFont(Font.BOLD, 305);
+        }
+        catch (FontFormatException | IOException e) {
+            e.printStackTrace();
+        }
+        return null;
     }
 
     private static void startImageLoop() {
@@ -166,6 +197,8 @@ public class ModularWallpaperWindows {
             boolean enabled = e.getStateChange() == ItemEvent.SELECTED;
             properties.setProperty("SECONDS", enabled ? "TRUE" : "FALSE");
             storeProperties(properties);
+            initializeTimeLabel();
+            initializeDateLabel();
         });
         popupMenu.add(seconds);
 
