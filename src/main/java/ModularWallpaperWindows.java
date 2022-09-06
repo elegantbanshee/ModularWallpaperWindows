@@ -9,6 +9,8 @@ import java.nio.file.Paths;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Properties;
 
 public class ModularWallpaperWindows {
@@ -16,8 +18,11 @@ public class ModularWallpaperWindows {
     private static JPanel panel = new JPanel();
     private static JLabel timeField = new JLabel();
     private static JLabel dateField = new JLabel();
+    private static HashMap<String, Color> colors = new HashMap<>();
 
     public static void main(String[] args) {
+        populateColors();
+
         frame.setFocusable(false);
         frame.setResizable(false);
         frame.setAlwaysOnTop(false);
@@ -52,6 +57,19 @@ public class ModularWallpaperWindows {
         startImageLoop();
     }
 
+    private static void populateColors() {
+        colors.put("Pink", new Color(255, 189, 189));
+        colors.put("Black", new Color(0, 0, 0));
+        colors.put("White", new Color(255, 255, 255, 255));
+        colors.put("Blue", new Color(97, 152, 208));
+        colors.put("Green", new Color(74, 120, 74));
+        colors.put("Dark Gray", new Color(75, 75, 75));
+        colors.put("Orange", new Color(227, 180, 77));
+        colors.put("Gray", new Color(150, 150, 150));
+        colors.put("Red", new Color(159, 23, 23));
+        colors.put("Yellow", new Color(255, 222, 142));
+    }
+
     private static void initializeDateLabel() {
         Font dateFont = getDateFont(getFontPath());
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
@@ -59,7 +77,7 @@ public class ModularWallpaperWindows {
         dateField.setBackground(new Color(0, 0, 0, 0));
         dateField.setBorder(BorderFactory.createEmptyBorder());
         dateField.setFont(dateFont);
-        dateField.setForeground(Color.WHITE);
+        dateField.setForeground(getColor());
         Dimension dateSize = new Dimension((int) screen.getWidth(), 100);
         dateField.setSize(dateSize);
         dateField.setMinimumSize(dateSize);
@@ -70,6 +88,16 @@ public class ModularWallpaperWindows {
 
     }
 
+    private static Color getColor() {
+        Properties properties = getProperties();
+        for (Map.Entry<String, Color> entry : colors.entrySet()) {
+            if (properties.getProperty("COLOR", "White").equals(entry.getKey())) {
+                return entry.getValue();
+            }
+        }
+        return Color.WHITE;
+    }
+
     private static void initializeTimeLabel() {
         Font timeFont = getTimeFont(getFontPath());
         Dimension screen = Toolkit.getDefaultToolkit().getScreenSize();
@@ -77,7 +105,7 @@ public class ModularWallpaperWindows {
         timeField.setBackground(new Color(0, 0, 0, 0));
         timeField.setBorder(BorderFactory.createEmptyBorder());
         timeField.setFont(timeFont);
-        timeField.setForeground(Color.WHITE);
+        timeField.setForeground(getColor());
         int timeSizeInt = areSecondsEnabled() ? 400 : 350;
         Dimension timeSize = new Dimension((int) screen.getWidth(), timeSizeInt);
         timeField.setSize(timeSize);
@@ -211,6 +239,20 @@ public class ModularWallpaperWindows {
             storeProperties(properties);
         });
         popupMenu.add(date);
+
+        // Color
+        PopupMenu color = new PopupMenu("Color");
+        for (Map.Entry<String, Color> entry : colors.entrySet()) {
+            MenuItem colorItem = new MenuItem(entry.getKey());
+            colorItem.addActionListener((e) -> {
+                properties.setProperty("COLOR", entry.getKey());
+                storeProperties(properties);
+                initializeTimeLabel();
+                initializeDateLabel();
+            });
+            color.add(colorItem);
+        }
+        popupMenu.add(color);
 
         // Tray Icon
         popupMenu.add(exit);
